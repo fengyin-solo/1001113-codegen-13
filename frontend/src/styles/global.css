@@ -31,5 +31,32 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
 .btn.ghost { background: transparent; }
 .link { border: none; background: none; color: var(--brand); cursor: pointer; padding: 0; }
-.page-foot { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.page-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--muted); }
 .error-text { color: #b42318; }
+.success-text { color: #067647; }
+
+/* 理货差异复核：口径标签、状态徽标、复核弹窗 */
+.tab-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tab-item { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 5px 14px; font-size: 13px; cursor: pointer; color: #344054; }
+.tab-item.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.tab-count { display: inline-block; min-width: 20px; margin-left: 6px; padding: 0 5px; border-radius: 999px; background: #eef2f7; font-size: 12px; line-height: 18px; text-align: center; }
+.tab-item.active .tab-count { background: rgba(255, 255, 255, 0.25); color: #fff; }
+.badge { display: inline-block; border-radius: 6px; padding: 2px 8px; font-size: 12px; white-space: nowrap; }
+.badge-pending { background: #eef2f7; color: #475467; }
+.badge-approved { background: #dcfae6; color: #067647; }
+.badge-returned { background: #fee4e2; color: #b42318; }
+.badge-incomplete { background: #fef0c7; color: #b54708; }
+.badge-stale { background: #fdecc8; color: #93370d; }
+.diff-over { color: #b42318; font-weight: 600; }
+.cell-hint { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+.cell-hint.warn { color: #b54708; }
+.modal-mask { position: fixed; inset: 0; background: rgba(16, 24, 40, 0.45); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-card { width: 560px; max-width: calc(100vw - 32px); background: #fff; border-radius: 10px; padding: 18px 20px; box-shadow: 0 12px 32px rgba(16, 24, 40, 0.2); }
+.modal-title { margin: 0 0 4px; font-size: 16px; }
+.modal-sub { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.form-item { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.form-item.form-wide { grid-column: 1 / -1; }
+.form-item input, .form-item textarea { border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 13px; color: #1f2937; font-family: inherit; }
+.modal-preview { margin: 12px 0; padding: 8px 10px; background: #f8fafc; border-radius: 6px; font-size: 13px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }

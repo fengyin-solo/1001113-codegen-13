@@ -3,7 +3,7 @@
     <header class="page-head">
       <div>
         <h2>理货作业管理</h2>
-        <p class="page-desc">维护理货单，围绕理货单号、关联航次、理货方式、理货箱量做登记、筛选与状态流转。</p>
+        <p class="page-desc">维护理货单，围绕理货单号、关联航次、理货方式、理货箱量做登记、筛选与状态流转。箱量与残损箱数须先在「理货差异复核」通过后才能确认完成结单。</p>
       </div>
       <div class="page-actions">
         <button class="btn primary" type="button" @click="openCreate">登记理货单</button>
@@ -103,6 +103,10 @@ async function runAction(action: string, row: Row) {
     })
     if (!response.ok) {
       throw new Error('理货作业动作未生效，请稍后重试')
+    }
+    const payload = await response.json()
+    if (payload.ok === false) {
+      throw new Error(payload.message || '理货作业动作未生效')
     }
     await reload()
   } catch (error) {

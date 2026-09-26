@@ -55,7 +55,25 @@ class TallyService:
         target = ACTION_RULES[action]
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
+        if target == STATUS_ORDER[-1] and not self._review_passed(entry_id):
+            return None, "理货箱量、残损箱数与随附记录的差异尚未复核通过，不能直接结单；请先完成理货差异复核"
         entry["status"] = target
         entry["pending"] = target != STATUS_ORDER[-1]
         entry["abnormal"] = action in NEGATIVE_ACTIONS
         return entry, f"理货单已{action}"
+
+    @staticmethod
+    def _review_passed(entry_id: int) -> bool:
+        conclusions = [
+            row
+            for row in store.rows("tally_review")
+            if int(row.get("tally_id", 0)) == entry_id
+        ]
+        return bool(conclusions and conclusions[-1].get("复核结论") == "通过")
+
+    def apply_review_result(self, entry: dict[str, Any], *, passed: bool) -> dict[str, Any]:
+        """理货差异复核回写：通过即结单（已完成），对不上则退回理货岗返工。"""
+        entry["status"] = STATUS_ORDER[-1] if passed else "理货中"
+        entry["pending"] = not passed
+        entry["abnormal"] = not passed
+        return entry

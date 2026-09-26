@@ -160,6 +160,7 @@ class TallyEntry(BaseModel):
     field_5: str | None = None  # 理货人员
     field_6: str | None = None  # 完成时间
     field_7: str | None = None  # 理货状态
+    field_8: str | None = None  # 随附箱量
 
 class DamageEntry(BaseModel):
     """残损记录明细结构。"""

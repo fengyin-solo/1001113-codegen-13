@@ -1,4 +1,4 @@
-"""理货作业接口：维护理货单，覆盖开始理货、提交复核、确认完成等动作。"""
+"""理货作业接口：维护理货单，覆盖开始理货、提交复核、确认完成与差异复核。"""
 from __future__ import annotations
 
 from typing import Any
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/tally", tags=["理货作业"])
 
 service = TallyService()
 
-LIST_FIELDS = ["理货单号", "关联航次", "理货方式", "理货箱量", "残损箱数", "理货人员", "完成时间", "理货状态"]
+LIST_FIELDS = ["理货单号", "关联航次", "理货方式", "理货箱量", "残损箱数", "随附箱量", "理货人员", "完成时间", "理货状态"]
 STATUSES = ["待理货", "理货中", "待复核", "已完成"]
 
 
@@ -28,6 +28,26 @@ def list_entries(
         raise HTTPException(status_code=400, detail="每页最多 200 条，请缩小分页范围")
     items, total = service.list_entries(keyword=keyword, status=status, page=page, size=size)
     return PageResult(items=items, total=total, page=page, size=size)
+
+
+# 注意：/reviews、/export 这类静态路径必须放在 /{entry_id} 之前，
+# 否则请求会被当成 entry_id 解析，直接返回 422。
+
+
+@router.get("/reviews")
+def list_reviews(
+    scope: str = Query(default="all", description="all、pending、incomplete、passed、returned"),
+) -> dict[str, Any]:
+    """理货差异复核结论：按理货单当前数据现算，刷新后复核结论与理货单保持一致。"""
+    items = service.review_rows(scope=scope)
+    return {"module": "tallyreview", "items": items, "total": len(items), "summary": service.review_summary()}
+
+
+@router.get("/export")
+def export_entries() -> dict[str, Any]:
+    """导出理货作业清单：返回当前过滤条件下的全量数据。"""
+    items, total = service.list_entries(page=1, size=10000)
+    return {"module": "tally", "total": total, "items": items}
 
 
 @router.get("/{entry_id}", response_model=dict)
@@ -58,8 +78,13 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     return ActionResult(ok=True, message=message, entry=entry)
 
 
-@router.get("/export")
-def export_entries() -> dict[str, Any]:
-    """导出理货作业清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
-    return {"module": "tally", "total": total, "items": items}
+@router.post("/{entry_id}/review", response_model=ActionResult)
+def decide_review(entry_id: int, payload: EntryPayload) -> ActionResult:
+    """人工复核：复核通过直接采信；复核对不上必须说明原因并退回。同一理货单只留最新一条结论。"""
+    decision = str(payload.values.get("decision") or "").strip()
+    reason = str(payload.values.get("reason") or "").strip()
+    reviewer = str(payload.values.get("reviewer") or "").strip()
+    entry, message = service.decide_review(entry_id, decision, reason, reviewer)
+    if entry is None:
+        return ActionResult(ok=False, message=message)
+    return ActionResult(ok=True, message=message, entry=entry)
